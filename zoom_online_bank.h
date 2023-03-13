@@ -117,6 +117,8 @@ void userSector(){
 
     if(user_option == 1){
         printf("Enter you transfer phone number:");
+    }else{
+        userSector();
     }
 }
 
