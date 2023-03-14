@@ -7,6 +7,7 @@
 
 
 #include "stdio.h"
+#include "stdlib.h"
 #define SIZE 1000
 
 // transition records
@@ -21,7 +22,6 @@ struct data{
     char nrc[50];
     char email[50];
     char password[50];
-
     char pOrb[20]; // personal or business
     char loan_s[2]; // loan status
     unsigned int monthly_income;
@@ -48,9 +48,10 @@ int two_charArray = -1;
 int nrc_valid = -1;
 int strongPass = -1;
 int phone_valid = -1;
-int login_valid = -1;
+int phone_found = -1;
 
-
+// global array
+int space_array[30];
 
 // function declaration
 void welcome();
@@ -67,6 +68,10 @@ void myStrongPassword(char pass[50]);
 void phone_validation(unsigned int phone_toValid);
 void myStringCopy(char first[50], char second[50]);
 void copy_two_charArray(char receiver[200], char transmitter[200]);
+void finding_phone_number(unsigned int toFind);
+void transfer_money(int transfer, int receiver, unsigned int amount);
+void space_counter();
+void recording_allData_toFile();
 
 
 void welcome(){
@@ -77,49 +82,111 @@ void welcome(){
     scanf("%d",&option);
 
     if( option == 1){
-        //login
+
         login();
-//        char loginEmail[50];
-//        char loginPassword[50];
-//
-//        printf("Enter your email to login:");
-//        scanf(" %[^\n]",&loginEmail[0]);
-//        printf("Enter your password:");
-//        scanf(" %[^\n]",&loginPassword[0]);
-//        login_valid = -1;
-//        login(loginEmail,loginPassword);
-//
-//        if(login_valid != -1){
-//            printf("***** Welcome to NCC bank *****\n");
-//        }else{
-//            printf("login failed\n");
-//        }
-
-
 
     }else if( option == 2){
-        // register
+
         registration();
+
     }else if(option == 3){
-        // exit
+
+        recording_allData_toFile();
+        exit(1);
+
     }else{
         welcome();
     }
+
 }
 
 
 void userSector(){
 
     int user_option = 0;
+    unsigned int phone = 0;
+    unsigned int amount_to_transfer = 0;
+
     printf("This is user profile:\n");
-    printf("Press 1 for transfer money:\n Press 2 for Withdraw:\nPress 3 for update your information:\nPress 4 for Cash in:\n:Press 5 for Loan:\nPress 6 for to view your history:\nPress 7 for Exit:\n");
+    printf("Press 1 for transfer money:\n Press 2 for Withdraw:\nPress 3 for update your information:\nPress 4 for Cash in:\n:Press 5 for Loan:\nPress 6 for to view your history:\nPress 7 for Exit:");
     scanf("%d",&user_option);
 
     if(user_option == 1){
-        printf("Enter you transfer phone number:");
-    }else{
+
+        phone_found = -1;
+
+        while (phone_found == -1){
+            printf("Enter you transfer phone number:");
+            scanf("%u",&phone);
+            finding_phone_number(phone);
+
+            if(phone_found == -1){
+                printf("Your phone number does not belong to any user!\n");
+            }
+        }
+
+        printf("Are you sure to transfer for %s : email- %s\n",db[phone_found].name,db[phone_found].email);
+
+        while(amount_to_transfer < db[emailExist].cur_amount){
+
+            printf("Enter amount to transfer:");
+            scanf(" %u",&amount_to_transfer);
+
+            if(db[emailExist].cur_amount-1000 > amount_to_transfer){
+                break;
+            }else{
+                printf("not sufficient balance!\n");
+                amount_to_transfer = 0;
+            }
+
+        }
+        // confirm password for transaction
+        two_charArray = -1;
+        char trans_pass[50];
+
+        while (two_charArray == -1){
+
+            printf("Enter your password to confirm your transfer process:");
+            scanf(" %[^\n]",&trans_pass[0]);
+
+            compare_twoCharArray(db[emailExist].password,trans_pass);
+
+            if(two_charArray == -1){
+                printf("Your password does not match!\n");
+            }
+        }
+
+        transfer_money(emailExist,phone_found,amount_to_transfer);
+        printingAllData();
         userSector();
+
+    }else if(user_option == 7){
+        welcome();
     }
+}
+
+void finding_phone_number(unsigned int toFind){
+
+    for(int i=0; i<users; i++){
+
+        if(db[i].phNumber == toFind){
+            phone_found = i;
+            break;
+        }
+
+    }
+
+}
+
+void transfer_money(int transfer, int receiver, unsigned int amount){
+
+    printf("loading to transfer....\n");
+
+    db[transfer].cur_amount = db[transfer].cur_amount-amount;
+    db[receiver].cur_amount = db[receiver].cur_amount+amount;
+
+    printf("### Transaction success ###\n");
+
 }
 
 void loadingAllDataFromFile(){
@@ -131,7 +198,11 @@ void loadingAllDataFromFile(){
     } else{
         for(int ncc=0; ncc<SIZE ; ncc++){
 
-            fscanf(fptr ,"%u%s%s%s%s%s%s%u%u%f%s%d%u%u%s%u%s",&db[ncc].id,&db[ncc].name,&db[ncc].nrc,&db[ncc].email,&db[ncc].password,&db[ncc].pOrb,&db[ncc].loan_s,&db[ncc].monthly_income,&db[ncc].loan_amount ,&db[ncc].loan_rate , &db[ncc].acc_s ,&db[ncc].acc_level,&db[ncc].phNumber , &db[ncc].cur_amount,&db[ncc].address[0] ,&db[ncc].transAmoLimitPerDay,&db[ncc].trc[0].note[0] );
+            fscanf(fptr ,"%u%s%s%s%s%s%s%u%u%f%s%d%u%u%s%u",&db[ncc].id,&db[ncc].name,&db[ncc].nrc,&db[ncc].email,&db[ncc].password,&db[ncc].pOrb,&db[ncc].loan_s,&db[ncc].monthly_income,&db[ncc].loan_amount ,&db[ncc].loan_rate , &db[ncc].acc_s ,&db[ncc].acc_level,&db[ncc].phNumber , &db[ncc].cur_amount,&db[ncc].address[0] ,&db[ncc].transAmoLimitPerDay);
+
+            for(int gcc=0; gcc<space_array[ncc]-15; gcc++){
+                fscanf(fptr,"%s",&db[ncc].trc[gcc].note[0]);
+            }
 
             if(db[ncc].email[0] == '\0'){
                 break;
@@ -146,9 +217,70 @@ void printingAllData(){
 
     for(int ncc=0; ncc<users ; ncc++){
 
-        printf("%u-%s-%s-%s-%s-%s-%s-%u-%u-%f-%s-%d-%u-%u-%s-%u-%s\n",db[ncc].id,db[ncc].name,db[ncc].nrc,db[ncc].email,db[ncc].password,
+        printf("%u-%s-%s-%s-%s-%s-%s-%u-%u-%f-%s-%d-%u-%u-%s-%u",db[ncc].id,db[ncc].name,db[ncc].nrc,db[ncc].email,db[ncc].password,
                db[ncc].pOrb, db[ncc].loan_s,db[ncc].monthly_income,db[ncc].loan_amount ,db[ncc].loan_rate , db[ncc].acc_s ,db[ncc].acc_level,
-               db[ncc].phNumber , db[ncc].cur_amount,db[ncc].address ,db[ncc].transAmoLimitPerDay,db[ncc].trc[0].note);
+               db[ncc].phNumber , db[ncc].cur_amount,db[ncc].address ,db[ncc].transAmoLimitPerDay);
+
+        for(int gcc=0; gcc<space_array[ncc]-15; gcc++){
+            printf("-%s",db[ncc].trc[gcc].note);
+        }
+        printf("\n");
+
+    }
+
+}
+
+void recording_allData_toFile(){
+
+    FILE *fptr = fopen("online_bank.txt","w");
+    if(fptr == NULL){
+        printf("file cannot open!\n");
+    }
+
+    for(int ncc=0; ncc<users; ncc++){
+        fprintf(fptr,"%u%c%s%c%s%c%s%c%s%c%s%c%s%c%u%c%u%c%f%c%s%c%d%c%u%c%u%c%s%c%u",db[ncc].id,' ',db[ncc].name,' ',db[ncc].nrc,' ',db[ncc].email,' ',db[ncc].password,' ',db[ncc].pOrb,' ', db[ncc].loan_s,' ',db[ncc].monthly_income,' ',db[ncc].loan_amount ,' ',db[ncc].loan_rate ,' ', db[ncc].acc_s ,' ',db[ncc].acc_level,' ',db[ncc].phNumber ,' ', db[ncc].cur_amount,' ',db[ncc].address ,' ',db[ncc].transAmoLimitPerDay);
+
+        for(int gcc=0; gcc<space_array[ncc]-15; gcc++){
+            fprintf(fptr," %s",&db[ncc].trc[gcc].note[0]);
+        }
+
+        fprintf(fptr,"%c",'\n');
+    }
+
+}
+
+void space_counter(){
+
+    FILE *fptr = fopen("online_bank.txt","r");
+
+    if(fptr == NULL){
+        printf("File opening error at space counter function!\n");
+    }else{
+
+        char c = fgetc(fptr);
+        int index = 0;
+
+        while (!feof(fptr)){
+
+            if(c != '\n'){
+
+                if(c == ' '){
+                    space_array[index]+=1;
+                }
+                c = fgetc(fptr);
+
+            }else{
+                index++;
+                c = fgetc(fptr);
+            }
+
+        }
+
+        for(int aaa=0; aaa<30; aaa++){
+            printf("%d ",space_array[aaa]);
+        }
+        printf("\n");
+
     }
 
 }
@@ -195,7 +327,6 @@ void registration(){
                 }
             }
 
-//            myStringCopy(db[users].nrc,re_nrc);
             printf("Your NRC is valid:\n");
 
             // strong password validation
@@ -211,9 +342,7 @@ void registration(){
                 }
             }
 
-//            myStringCopy(db[users].password,re_password);
             printf("Your password is strong and save.\n");
-
 
             // phone number validation
             phone_valid = -1;
@@ -261,21 +390,6 @@ void registration(){
             printingAllData();
             welcome();
 
-//            myStringCopy(db[users].email,reEmail);
-//            myStringCopy(db[users].name,re_name);
-//            myStringCopy(db[users].nrc,re_nrc);
-//            myStringCopy(db[users].password,re_password);
-//            myStringCopy(db[users].pOrb,db[2].pOrb);
-//            myStringCopy(db[users].loan_s,db[2].loan_s);
-//            myStringCopy(db[users].acc_s,db[2].acc_s);
-//
-//            db[users].id = users+1;
-//            db[users].phNumber = re_phone;
-//            db[users].loan_rate = db[2].loan_rate;
-//            db[users].acc_level = db[2].acc_level;
-//            db[users].transAmoLimitPerDay = db[2].transAmoLimitPerDay;
-
-
         }else{
             printf("Your email was already exist!\n");
             registration();
@@ -313,51 +427,12 @@ void login(){
         }
 
     }
-    printf("Welcome %s\n",db[emailExist].name);
+
+    printf("### Welcome Mr/Mrs: %s ###\n",db[emailExist].name);
     printf("Your current amount : %u\n",db[emailExist].cur_amount);
     userSector();
 
 }
-
-
-
-//void login(char lEmail[50],char lPassword[50]){
-//
-//    int lEmail_count = charCounting(lEmail);
-//    int lPassword_count = charCounting(lPassword);
-//    int lEmailCounter = 0;
-//    int lPasswordCounter = 0;
-//
-//
-//    for(int i=0; i<users; i++){
-//
-//        int db_email_count = charCounting(db[i].email);
-//        int db_password_count = charCounting(db[i].password);
-//
-//        if(lEmail_count == db_email_count && lPassword_count == db_password_count){
-//            for(int gcc=0; gcc<lEmail_count; gcc++){
-//                if(lEmail[gcc] != db[i].email[gcc]){
-//                    break;
-//                }else{
-//                    lEmailCounter++;
-//                }
-//            }
-//            for(int gcc=0; gcc<lPassword_count; gcc++){
-//                if(lPassword[gcc] != db[i].password[gcc]){
-//                    break;
-//                }else{
-//                    lPasswordCounter++;
-//                }
-//            }
-//            if(lEmail_count == lEmailCounter && lPassword_count == lPasswordCounter){
-//                login_valid = 1;
-//            }
-//        }
-//
-//    }
-//
-//}
-
 
 int charCounting(char toCount[50]){
 
@@ -371,6 +446,7 @@ int charCounting(char toCount[50]){
         }
     }
     return charCount;
+
 }
 
 void myGmailValidation(char toValidate[50]){
@@ -430,7 +506,6 @@ struct nrc_region{
     char region[10];
 };
 
-// ) = 41 in ascii table
 
 struct nrc_region nrc[3];
 

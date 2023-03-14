@@ -7,6 +7,7 @@
 
 int main(){
 
+    space_counter();
     loadingAllDataFromFile();
     printingAllData();
     welcome();
