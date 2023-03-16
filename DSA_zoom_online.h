@@ -1,14 +1,12 @@
 //
-// Created by DELL on 3/7/2023.
+// Created by DELL on 3/15/2023.
 //
 
-#ifndef DIPLOMAINCOMPUTING_ZOOM_ONLINE_BANK_H
-#define DIPLOMAINCOMPUTING_ZOOM_ONLINE_BANK_H
-
+#ifndef DIPLOMAINCOMPUTING_DSA_ZOOM_ONLINE_H
+#define DIPLOMAINCOMPUTING_DSA_ZOOM_ONLINE_H
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "time.h"
 #define SIZE 1000
 
 // transition records
@@ -40,13 +38,6 @@ struct data{
 
 struct data db[SIZE];
 
-struct my_time{
-    char c_time[25];
-
-};
-
-struct my_time Ctime[1];
-
 // global index declaration
 int users = 0;
 int gValid = -1;
@@ -57,17 +48,20 @@ int nrc_valid = -1;
 int strongPass = -1;
 int phone_valid = -1;
 int phone_found = -1;
+int login_valid=-1;
 
 // global array
 int space_array[30];
 char integer_to_char_array_data[10];
 
+
 // function declaration
 void welcome();
-void login();
-void userSector();
+//void login();
+void login(char lEmail[50],char lPassword[50]);
 void loadingAllDataFromFile();
 void printingAllData();
+void userSector();
 void registration();
 int charCounting(char toCount[50]);
 void myGmailValidation(char toValidate[50]);
@@ -84,29 +78,8 @@ void space_counter();
 void recording_allData_toFile();
 void transaction_record(int transfer, int receiver, char who, unsigned int amount);
 void integer_to_char(unsigned int value);
-void get_time();
+int integerCounting(unsigned long long int toCount);
 
-
-
-
-//int currentTime()
-//{
-//    struct tm *newtime;
-//    time_t ltime;
-//
-///* Get the time in seconds */
-//    time(&ltime);
-///* Convert it to the structure tm */
-//    newtime = localtime(&ltime);
-//
-//    /* Print the local time as a string */
-//    for(int i=0; i<14; i++){
-//        printf("%s", asctime(newtime));
-//
-//    }
-//
-//
-//}
 
 void welcome(){
 
@@ -117,7 +90,27 @@ void welcome(){
 
     if( option == 1){
 
-        login();
+        char loginEmail[50];
+        char loginPassword[50];
+
+        printf("Enter your email to login:");
+        scanf(" %[^\n]",&loginEmail[0]);
+        printf("Enter your password:");
+        scanf(" %[^\n]",&loginPassword[0]);
+        login_valid = -1;
+
+
+        while(login_valid == -1){
+            login(loginEmail,loginPassword);
+
+            if(login_valid == 1){
+                printf("Welcome %s\n",db[emailExist].name);
+            }else{
+                printf("Your password is invalid\n");
+                login_valid=-1;
+            }
+
+        }
 
     }else if( option == 2){
 
@@ -134,60 +127,58 @@ void welcome(){
 
 }
 
-void get_time(){
-    time_t tm;
-    time(&tm);
+int integerCounting(unsigned long long int toCount){
 
-    printf("Current time =%s\n", ctime(&tm));
+    int charCount = 0;
 
-    FILE *fptr = fopen("myTime.txt","w");
-    fprintf(fptr,"%s", ctime(&tm));
-
-    fclose(fptr);
-
-    int index=0;
-    int time_space_counter=0;
-
-    Ctime[0].c_time[index]='-';
-    index++;
-
-    FILE *fptr2 = fopen("myTime.txt","r");
-    char c = fgetc(fptr2);
-
-    while (!feof(fptr2)){
-
-        if( c==' '){
-
-            time_space_counter++;
-
-            if(time_space_counter == 1){
-                Ctime[0].c_time[index]=' ';
-                c = fgetc(fptr2);
-                index++;
-            } else if(time_space_counter==4){
-                Ctime[0].c_time[index]=' ';
-                c = fgetc(fptr2);
-                index++;
-            } else{
-                Ctime[0].c_time[index]=' ';
-                c = fgetc(fptr2);
-                index++;
-            }
-
-
-        } else{
-
-            Ctime[0].c_time[index]=c;
-            c = fgetc(fptr2);
-            index++;
-
+    for(int gcc=0; gcc<50; gcc++){
+        if(toCount == ' '){
+            break;
+        }else{
+            charCount++;
         }
+    }
+    return charCount;
 
+}
+
+//login assignment
+void login(char lEmail[50],char lPassword[50]){
+
+    int lEmail_count = charCounting(lEmail);
+    int lPassword_count = charCounting(lPassword);
+    int lEmailCounter = 0;
+    int lPasswordCounter = 0;
+
+
+    for(int i=0; i<users; i++){
+
+        int db_email_count = charCounting(db[i].email);
+        int db_password_count = charCounting(db[i].password);
+
+        if(lEmail_count == db_email_count && lPassword_count == db_password_count){
+            for(int gcc=0; gcc<lEmail_count; gcc++){
+                if(lEmail[gcc] != db[i].email[gcc]){
+                    break;
+                }else{
+                    lEmailCounter++;
+                }
+            }
+            for(int gcc=0; gcc<lPassword_count; gcc++){
+                if(lPassword[gcc] != db[i].password[gcc]){
+                    break;
+                }else{
+                    lPasswordCounter++;
+                }
+            }
+            if(lEmail_count == lEmailCounter && lPassword_count == lPasswordCounter){
+                login_valid = 1;
+            }
+        }
 
     }
 
 }
-
 
 void userSector(){
 
@@ -281,7 +272,6 @@ void transfer_money(int transfer, int receiver, unsigned int amount){
 
 }
 
-
 void transaction_record(int transfer, int receiver, char who, unsigned int amount){
 
     int trans_name_counter = charCounting(db[transfer].name);
@@ -290,20 +280,14 @@ void transaction_record(int transfer, int receiver, char who, unsigned int amoun
     int amount_counter = charCounting(integer_to_char_array_data);
 
 
-
     char from[5] = {'F','r','o','m','-'};
     char to[4] = {'-','t','o','-'};
-    char kForm[2] = {'-','$'};
-
-
-
 
     // From-Nori-to-LoneLone-10000
 
     if(who == 't'){
 
         int index_point = 0;
-
 
         // for From- to trc note
         for(int i=0; i<5; i++){
@@ -329,21 +313,8 @@ void transaction_record(int transfer, int receiver, char who, unsigned int amoun
             index_point++;
         }
 
-        for(int a=0; a<2; a++){
-            db[transfer].trc[space_array[transfer]-15].note[index_point] = kForm[a];
-            index_point++;
-        }
-
         for(int a=0; a<amount_counter; a++){
             db[transfer].trc[space_array[transfer]-15].note[index_point] = integer_to_char_array_data[a];
-            index_point++;
-        }
-
-
-        get_time();
-        for(int i=0; i<25; i++){
-
-            db[transfer].trc[space_array[transfer]-15].note[index_point]=Ctime[0].c_time[i];
             index_point++;
         }
 
@@ -372,27 +343,36 @@ void transaction_record(int transfer, int receiver, char who, unsigned int amoun
             index_point++;
         }
 
-        for(int a=0; a<2; a++){
-            db[receiver].trc[space_array[receiver]-15].note[index_point] = kForm[a];
-            index_point++;
-        }
-
         for(int a=0; a<amount_counter; a++){
             db[receiver].trc[space_array[receiver]-15].note[index_point] = integer_to_char_array_data[a];
-            index_point++;
-        }
-
-
-        get_time();
-        for(int a=0; a<25; a++){
-            db[receiver].trc[space_array[receiver]-15].note[index_point]=Ctime[0].c_time[a];
             index_point++;
         }
 
         space_array[receiver] += 1;
 
     }
-    
+
+}
+
+void integer_to_char_test(unsigned long long int value){
+
+    FILE *fptr = fopen("nori.txt","w");
+
+    if(fptr == NULL){
+        printf("File opening error at integer_to_char\n");
+    }else{
+        fprintf(fptr,"%llu",value);
+    }
+    fclose(fptr);
+
+    FILE *fptr2 = fopen("nori.txt","r");
+
+    fscanf(fptr2,"%s", &integer_to_char_array_data[0]);
+
+    for(int i=0; i<4; i++){
+        printf("%c ",integer_to_char_array_data[i]);
+    }
+
 }
 
 void integer_to_char(unsigned int value){
@@ -418,7 +398,7 @@ void integer_to_char(unsigned int value){
 
 void loadingAllDataFromFile(){
 
-    FILE *fptr = fopen("online_bank.txt","r");
+    FILE *fptr = fopen("nori.txt","r");
 
     if( fptr == NULL){
         printf("Error at loadingAllDataFromFile Function!\n");
@@ -459,7 +439,7 @@ void printingAllData(){
 
 void recording_allData_toFile(){
 
-    FILE *fptr = fopen("online_bank.txt","w");
+    FILE *fptr = fopen("nori.txt","w");
     if(fptr == NULL){
         printf("file cannot open!\n");
     }
@@ -478,7 +458,7 @@ void recording_allData_toFile(){
 
 void space_counter(){
 
-    FILE *fptr = fopen("online_bank.txt","r");
+    FILE *fptr = fopen("z_online_bank.txt","r");
 
     if(fptr == NULL){
         printf("File opening error at space counter function!\n");
@@ -518,7 +498,7 @@ void registration(){
     char re_name[50];
     char re_nrc[50];
     char re_password[50];
-    unsigned int re_phone = 0;
+    unsigned long long int re_phone = 0;
 
     printf("This is NCC bank registration:\n");
     printf("Enter your email:");
@@ -571,12 +551,19 @@ void registration(){
 
             printf("Your password is strong and save.\n");
 
+            printf("Enter your phone number:");
+            scanf("%llu",&re_phone);
+
+
+            phone_validation(re_phone);
+
+
             // phone number validation
             phone_valid = -1;
             while(phone_valid == -1){
 
                 printf("Enter your phone number:");
-                scanf("%u",&re_phone);
+                scanf("%llu",&re_phone);
 
                 phone_validation(re_phone);
 
@@ -628,38 +615,38 @@ void registration(){
     }
 }
 
-void login(){
-
-    char lEmail[50];
-    char lPassword[50];
-
-    emailExist = -1;
-    two_charArray = -1;
-
-    while(emailExist == -1 || two_charArray == -1){
-        printf("Enter your email:");
-        scanf(" %[^\n]",&lEmail[0]);
-
-        printf("Enter your password:");
-        scanf(" %[^\n]",&lPassword[0]);
-
-        emailExistChecking(lEmail);
-
-        compare_twoCharArray(db[emailExist].password, lPassword);
-
-        if(emailExist == -1 || two_charArray == -1){
-            emailExist = -1;
-            two_charArray = -1;
-            printf("Your login credential was wrong!\n");
-        }
-
-    }
-
-    printf("### Welcome Mr/Mrs: %s ###\n",db[emailExist].name);
-    printf("Your current amount : %u\n",db[emailExist].cur_amount);
-    userSector();
-
-}
+//void login(){
+//
+//    char lEmail[50];
+//    char lPassword[50];
+//
+//    emailExist = -1;
+//    two_charArray = -1;
+//
+//    while(emailExist == -1 || two_charArray == -1){
+//        printf("Enter your email:");
+//        scanf(" %[^\n]",&lEmail[0]);
+//
+//        printf("Enter your password:");
+//        scanf(" %[^\n]",&lPassword[0]);
+//
+//        emailExistChecking(lEmail);
+//
+//        compare_twoCharArray(db[emailExist].password, lPassword);
+//
+//        if(emailExist == -1 || two_charArray == -1){
+//            emailExist = -1;
+//            two_charArray = -1;
+//            printf("Your login credential was wrong!\n");
+//        }
+//
+//    }
+//
+//    printf("### Welcome Mr/Mrs: %s ###\n",db[emailExist].name);
+//    printf("Your current amount : %u\n",db[emailExist].cur_amount);
+//    userSector();
+//
+//}
 
 int charCounting(char toCount[50]){
 
@@ -866,4 +853,4 @@ void myStringCopy(char first[50], char second[50]){
 
 }
 
-#endif //DIPLOMAINCOMPUTING_ZOOM_ONLINE_BANK_H
+#endif //DIPLOMAINCOMPUTING_DSA_ZOOM_ONLINE_H

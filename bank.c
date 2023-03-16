@@ -11,6 +11,11 @@ int main(){
     loadingAllDataFromFile();
     printingAllData();
     welcome();
+//    integer_to_char(1000);
+
+//currentTime();
+
+//myTime();
 
 
     return 0;
