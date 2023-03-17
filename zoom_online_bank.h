@@ -30,7 +30,7 @@ struct data{
     float loan_rate;
     char acc_s[10]; //account status
     int acc_level;
-    unsigned int phNumber;
+    unsigned long long int phNumber;
     unsigned int cur_amount; //current amount
     char address[100];
     unsigned  int transAmoLimitPerDay; // transAmountLimitPerDay minimize for our project 5min
@@ -75,7 +75,7 @@ void emailExistChecking(char toCheck[50]);
 void compare_twoCharArray(char first[50], char second[50]);
 void nrc_validation(char nrc_toCheck[50]);
 void myStrongPassword(char pass[50]);
-void phone_validation(unsigned int phone_toValid);
+//void phone_validation(unsigned int phone_toValid);
 void myStringCopy(char first[50], char second[50]);
 void copy_two_charArray(char receiver[200], char transmitter[200]);
 void finding_phone_number(unsigned int toFind);
@@ -85,28 +85,9 @@ void recording_allData_toFile();
 void transaction_record(int transfer, int receiver, char who, unsigned int amount);
 void integer_to_char(unsigned int value);
 void get_time();
+int integer_counting(unsigned long long int intCount);
+void phone_validation(unsigned long long int phone_toValid);
 
-
-
-
-//int currentTime()
-//{
-//    struct tm *newtime;
-//    time_t ltime;
-//
-///* Get the time in seconds */
-//    time(&ltime);
-///* Convert it to the structure tm */
-//    newtime = localtime(&ltime);
-//
-//    /* Print the local time as a string */
-//    for(int i=0; i<14; i++){
-//        printf("%s", asctime(newtime));
-//
-//    }
-//
-//
-//}
 
 void welcome(){
 
@@ -425,7 +406,7 @@ void loadingAllDataFromFile(){
     } else{
         for(int ncc=0; ncc<SIZE ; ncc++){
 
-            fscanf(fptr ,"%u%s%s%s%s%s%s%u%u%f%s%d%u%u%s%u",&db[ncc].id,&db[ncc].name,&db[ncc].nrc,&db[ncc].email,&db[ncc].password,&db[ncc].pOrb,&db[ncc].loan_s,&db[ncc].monthly_income,&db[ncc].loan_amount ,&db[ncc].loan_rate , &db[ncc].acc_s ,&db[ncc].acc_level,&db[ncc].phNumber , &db[ncc].cur_amount,&db[ncc].address[0] ,&db[ncc].transAmoLimitPerDay);
+            fscanf(fptr ,"%u%s%s%s%s%s%s%u%u%f%s%d%u%llu%s%u",&db[ncc].id,&db[ncc].name,&db[ncc].nrc,&db[ncc].email,&db[ncc].password,&db[ncc].pOrb,&db[ncc].loan_s,&db[ncc].monthly_income,&db[ncc].loan_amount ,&db[ncc].loan_rate , &db[ncc].acc_s ,&db[ncc].acc_level,&db[ncc].phNumber , &db[ncc].cur_amount,&db[ncc].address[0] ,&db[ncc].transAmoLimitPerDay);
 
             for(int gcc=0; gcc<space_array[ncc]-15; gcc++){
                 fscanf(fptr,"%s",&db[ncc].trc[gcc].note[0]);
@@ -444,7 +425,7 @@ void printingAllData(){
 
     for(int ncc=0; ncc<users ; ncc++){
 
-        printf("%u-%s-%s-%s-%s-%s-%s-%u-%u-%f-%s-%d-%u-%u-%s-%u",db[ncc].id,db[ncc].name,db[ncc].nrc,db[ncc].email,db[ncc].password,
+        printf("%u-%s-%s-%s-%s-%s-%s-%u-%u-%f-%s-%d-%u-%llu-%s-%u",db[ncc].id,db[ncc].name,db[ncc].nrc,db[ncc].email,db[ncc].password,
                db[ncc].pOrb, db[ncc].loan_s,db[ncc].monthly_income,db[ncc].loan_amount ,db[ncc].loan_rate , db[ncc].acc_s ,db[ncc].acc_level,
                db[ncc].phNumber , db[ncc].cur_amount,db[ncc].address ,db[ncc].transAmoLimitPerDay);
 
@@ -465,7 +446,7 @@ void recording_allData_toFile(){
     }
 
     for(int ncc=0; ncc<users; ncc++){
-        fprintf(fptr,"%u%c%s%c%s%c%s%c%s%c%s%c%s%c%u%c%u%c%f%c%s%c%d%c%u%c%u%c%s%c%u",db[ncc].id,' ',db[ncc].name,' ',db[ncc].nrc,' ',db[ncc].email,' ',db[ncc].password,' ',db[ncc].pOrb,' ', db[ncc].loan_s,' ',db[ncc].monthly_income,' ',db[ncc].loan_amount ,' ',db[ncc].loan_rate ,' ', db[ncc].acc_s ,' ',db[ncc].acc_level,' ',db[ncc].phNumber ,' ', db[ncc].cur_amount,' ',db[ncc].address ,' ',db[ncc].transAmoLimitPerDay);
+        fprintf(fptr,"%u%c%s%c%s%c%s%c%s%c%s%c%s%c%u%c%u%c%f%c%s%c%d%c%llu%c%u%c%s%c%u",db[ncc].id,' ',db[ncc].name,' ',db[ncc].nrc,' ',db[ncc].email,' ',db[ncc].password,' ',db[ncc].pOrb,' ', db[ncc].loan_s,' ',db[ncc].monthly_income,' ',db[ncc].loan_amount ,' ',db[ncc].loan_rate ,' ', db[ncc].acc_s ,' ',db[ncc].acc_level,' ',db[ncc].phNumber ,' ', db[ncc].cur_amount,' ',db[ncc].address ,' ',db[ncc].transAmoLimitPerDay);
 
         for(int gcc=0; gcc<space_array[ncc]-15; gcc++){
             fprintf(fptr," %s",&db[ncc].trc[gcc].note[0]);
@@ -518,7 +499,7 @@ void registration(){
     char re_name[50];
     char re_nrc[50];
     char re_password[50];
-    unsigned int re_phone = 0;
+    unsigned long long int re_phone = 0;
 
     printf("This is NCC bank registration:\n");
     printf("Enter your email:");
@@ -532,7 +513,6 @@ void registration(){
         printf("You can register now:\n");
         emailExist = -1;
         emailExistChecking(reEmail);
-
         if(emailExist == -1){
 
             printf("Your email is valid:\n");
@@ -572,17 +552,16 @@ void registration(){
             printf("Your password is strong and save.\n");
 
             // phone number validation
-            phone_valid = -1;
-            while(phone_valid == -1){
-
-                printf("Enter your phone number:");
-                scanf("%u",&re_phone);
-
+            phone_valid= -1;
+            while (phone_valid== -1){
+                printf("Enter Your phone number: +959");
+                scanf("%llu", &re_phone);
                 phone_validation(re_phone);
 
                 if(phone_valid == -1){
-                    printf("Your phone number is invalid or already taken!\n");
+                    printf("Your phone number is already registered!!\n");
                 }
+
             }
 
             printf("Your phone number registration success\n");
@@ -821,26 +800,62 @@ void myStrongPassword(char pass[50]){
     }
 }
 
+void phone_validation(unsigned long long int phone_toValid){
 
-void phone_validation(unsigned int phone_toValid){
+    int phone_counter= 0;
+    int phone_charCount=0;
+    phone_charCount= integer_counting( phone_toValid);
+    if(phone_charCount == 8 || phone_charCount == 9 ){
+        for (int i = 0; i < users; ++i) {
 
-    int phone_counter = 0;
+            if(phone_toValid != db[i].phNumber){
+                phone_counter++;
+            }else{
+                phone_valid = -1;
 
-    for(int i=0; i<users; i++){
-
-        if(phone_toValid != db[i].phNumber){
-            phone_counter++;
+                break;
+            }
+        }
+        if(phone_counter == users){
+            phone_valid= 1;
         }else{
-            phone_valid = -1;
-            break;
+            printf("Invalid Phone number or Phone number is already taken!:\n");
         }
     }
+}
 
-    if(phone_counter == users){
-        phone_valid = 1;
+int integer_counting(unsigned long long int intCount){
+
+    int count= 0;
+
+    while ( intCount != 0){
+        intCount = intCount/10;
+        count++;
     }
 
+    return  count;
 }
+
+
+//void phone_validation(unsigned int phone_toValid){
+//
+//    int phone_counter = 0;
+//
+//    for(int i=0; i<users; i++){
+//
+//        if(phone_toValid != db[i].phNumber){
+//            phone_counter++;
+//        }else{
+//            phone_valid = -1;
+//            break;
+//        }
+//    }
+//
+//    if(phone_counter == users){
+//        phone_valid = 1;
+//    }
+//
+//}
 
 void copy_two_charArray(char receiver[200], char transmitter[200]){
 
