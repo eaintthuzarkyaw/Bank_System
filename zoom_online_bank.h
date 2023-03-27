@@ -58,6 +58,8 @@ int strongPass = -1;
 int phone_valid = -1;
 int phone_found = -1;
 
+int trans_limit = 0;
+
 // global array
 int space_array[30];
 char integer_to_char_array_data[10];
@@ -87,6 +89,7 @@ void integer_to_char(unsigned int value);
 void get_time();
 int integer_counting(unsigned long long int intCount);
 void phone_validation(unsigned long long int phone_toValid);
+void get_limit_amount(int user_index);
 
 
 void welcome(){
@@ -879,6 +882,42 @@ void myStringCopy(char first[50], char second[50]){
         first[a] = second[a];
     }
 
+}
+
+void get_limit_amount(int user_index){
+    // 1 for personal , 2 for business
+    int acc_level = db[user_index].acc_level;
+    char pOrb = db[user_index].pOrb[0];
+    int p_or_b = 0;
+
+    if(pOrb == 'p'){
+        p_or_b = 1;
+    }else{
+        p_or_b = 2;
+    }
+
+    switch (acc_level) {
+        case 1:
+            if(p_or_b == 1){
+                trans_limit = 100000;
+            }else{
+                trans_limit = 1000000;
+            }
+            break;
+        case 2:
+            if(p_or_b == 1){
+                trans_limit = 50000;
+            }else{
+                trans_limit = 500000;
+            }
+            break;
+        case 3:
+            if(p_or_b == 1){
+                trans_limit = 10000;
+            }else{
+                trans_limit = 100000;
+            }
+    }
 }
 
 #endif //DIPLOMAINCOMPUTING_ZOOM_ONLINE_BANK_H
