@@ -9,8 +9,7 @@ int main(){
 
     space_counter();
     loadingAllDataFromFile();
-//    printingAllData();
-//    welcome();
+//
 //    integer_to_char(1000);
 
     current_data_to_transfer(3000);
