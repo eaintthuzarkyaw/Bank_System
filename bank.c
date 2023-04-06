@@ -9,10 +9,12 @@ int main(){
 
     space_counter();
     loadingAllDataFromFile();
-    printingAllData();
-    welcome();
+//    printingAllData();
+//    welcome();
 //    integer_to_char(1000);
 
+    current_data_to_transfer(3000);
+    calculate_amount_same_day(0);
 //currentTime();
 
 //myTime();

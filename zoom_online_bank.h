@@ -63,8 +63,14 @@ int trans_limit = 0;
 // global array
 int space_array[30];
 char integer_to_char_array_data[10];
+unsigned int charArray_to_unsignedInt_data;
+
+unsigned int current_day_to_transfer = 0;
+unsigned int current_amount_to_transfer = 0;
+
 
 // function declaration
+
 void welcome();
 void login();
 void userSector();
@@ -86,10 +92,13 @@ void space_counter();
 void recording_allData_toFile();
 void transaction_record(int transfer, int receiver, char who, unsigned int amount);
 void integer_to_char(unsigned int value);
+unsigned int charArray_to_unsignedInt_fun(char charArray[10]);
 void get_time();
 int integer_counting(unsigned long long int intCount);
 void phone_validation(unsigned long long int phone_toValid);
 void get_limit_amount(int user_index);
+unsigned int calculate_amount_same_day(int to_calculate_index);
+void current_data_to_transfer(int current_amount_toTransfer);
 
 
 void welcome(){
@@ -145,15 +154,15 @@ void get_time(){
             time_space_counter++;
 
             if(time_space_counter == 1){
-                Ctime[0].c_time[index]=' ';
+                Ctime[0].c_time[index]='!';
                 c = fgetc(fptr2);
                 index++;
             } else if(time_space_counter==4){
-                Ctime[0].c_time[index]=' ';
+                Ctime[0].c_time[index]='@';
                 c = fgetc(fptr2);
                 index++;
             } else{
-                Ctime[0].c_time[index]=' ';
+                Ctime[0].c_time[index]='-';
                 c = fgetc(fptr2);
                 index++;
             }
@@ -318,6 +327,7 @@ void transaction_record(int transfer, int receiver, char who, unsigned int amoun
             index_point++;
         }
 
+
         for(int a=0; a<amount_counter; a++){
             db[transfer].trc[space_array[transfer]-15].note[index_point] = integer_to_char_array_data[a];
             index_point++;
@@ -397,6 +407,26 @@ void integer_to_char(unsigned int value){
     for(int i=0; i<4; i++){
         printf("%c ",integer_to_char_array_data[i]);
     }
+
+}
+unsigned int charArray_to_unsignedInt_fun(char charArray[10]){
+
+    unsigned int data;
+
+    FILE *fptr = fopen("nori.txt","w");
+
+    if(fptr == NULL){
+        printf("File opening error at integer_to_char\n");
+    }else{
+        fprintf(fptr,"%s",charArray);
+    }
+    fclose(fptr);
+
+    FILE *fptr2 = fopen("nori.txt","r");
+
+    fscanf(fptr2,"%u", &data);
+
+    return data;
 
 }
 
@@ -917,7 +947,109 @@ void get_limit_amount(int user_index){
             }else{
                 trans_limit = 100000;
             }
+        default:
+            break;
     }
+}
+
+void current_data_to_transfer(int current_amount_toTransfer){
+
+    char get_current_day[2];
+    get_time();
+
+    printf("Current time: %s\n",Ctime[0].c_time);
+    printf("Current amount to transfer: %d\n",current_amount_toTransfer);
+
+    get_current_day[0] = Ctime[0].c_time[9];
+    get_current_day[1] = Ctime[0].c_time[10];
+
+    unsigned int current_day_to_transferL = charArray_to_unsignedInt_fun(get_current_day);
+
+    printf("\nCurrent day: %u\n",charArray_to_unsignedInt_data);
+
+    current_day_to_transfer = current_day_to_transferL;
+    current_amount_to_transfer = current_amount_toTransfer;
+}
+
+unsigned int calculate_amount_same_day(int to_calculate_index){
+
+    int record_counter = space_array[to_calculate_index]-15;
+
+    int index_counter = 0;
+
+    char amount_char_array[10];
+
+    char day_char_array[3];
+
+    for(int a=record_counter-1; a>=0; a--){
+
+        int current_record_counter = charCounting(db[to_calculate_index].trc[a].note);
+
+        // -Wed!Mar-29-10:53:04@2023
+        // to get $
+        for(int aa=0; aa<current_record_counter; aa++){
+
+            if(db[to_calculate_index].trc[a].note[aa] == '$'){
+                break;
+            }
+            index_counter++;
+
+        }
+
+        // stop -
+        int quantity_of_amount = 0;
+        for(int aaa=index_counter; aaa<current_record_counter; aaa++){
+
+            if(db[to_calculate_index].trc[a].note[aaa] == '-'){
+                break;
+            }
+            quantity_of_amount++;
+
+        }
+
+        index_counter++;
+        for(int x=0; x<quantity_of_amount-1; x++){
+
+            amount_char_array[x] = db[to_calculate_index].trc[a].note[index_counter];
+            index_counter++;
+        }
+
+        unsigned int current_record_amount = charArray_to_unsignedInt_fun(amount_char_array);
+        printf("current record amount : %d\n",current_record_amount);
+
+        // to get day of current record
+        for(int xx=index_counter; xx<current_record_counter; xx++){
+
+            if(db[to_calculate_index].trc[a].note[xx] == '!'){
+                break;
+            }
+            index_counter++;
+
+        }
+
+        day_char_array[0] = db[to_calculate_index].trc[a].note[index_counter+5];
+        day_char_array[1] = db[to_calculate_index].trc[a].note[index_counter+6];
+
+        unsigned int current_record_day = charArray_to_unsignedInt_fun(day_char_array);
+        printf("Current record day : %d\n",current_record_day);
+
+        if(current_record_day != current_day_to_transfer){
+            break;
+        }
+
+        index_counter = 0;
+
+    }
+
+}
+
+void receiver_limit(){
+
+    for(int i=0; i<100; i++){
+
+    }
+
+
 }
 
 #endif //DIPLOMAINCOMPUTING_ZOOM_ONLINE_BANK_H
