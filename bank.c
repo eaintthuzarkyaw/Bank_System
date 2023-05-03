@@ -7,10 +7,11 @@
 
 int main(){
 
-    space_counter();
-    loadingAllDataFromFile();
+//    space_counter();
+//    loadingAllDataFromFile();
 //
 //    integer_to_char(1000);
+
 
     current_data_to_transfer(3000);
     calculate_amount_same_day(0);

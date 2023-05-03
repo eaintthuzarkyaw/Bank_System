@@ -99,6 +99,7 @@ void phone_validation(unsigned long long int phone_toValid);
 void get_limit_amount(int user_index);
 unsigned int calculate_amount_same_day(int to_calculate_index);
 void current_data_to_transfer(int current_amount_toTransfer);
+void receiver_limit();
 
 
 void welcome(){
@@ -1045,9 +1046,14 @@ unsigned int calculate_amount_same_day(int to_calculate_index){
 
 void receiver_limit(){
 
-    for(int i=0; i<100; i++){
+    int index_forLimit = -1;
+    get_limit_amount(0);
 
-    }
+    
+
+
+
+
 
 
 }
